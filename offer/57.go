@@ -18,3 +18,26 @@ func twoSum(nums []int, target int) []int {
 	}
 	return []int{nums[i], nums[j]}
 }
+
+func findContinuousSequence(target int) [][]int {
+	// target = (start+start+delta) * (delta+1) / 2
+	var ret [][]int
+	for delta := 1; ; delta++ {
+		start := ((target * 2 / (delta + 1)) - delta) / 2
+		if start == 0 {
+			break
+		}
+		// verify
+		if target == (start+start+delta)*(delta+1)/2 {
+			tmp := []int{}
+			for i := start; i <= start+delta; i++ {
+				tmp = append(tmp, i)
+			}
+			ret = append(ret, tmp)
+		}
+	}
+	for i, j := 0, len(ret)-1; i < j; i, j = i+1, j-1 {
+		ret[i], ret[j] = ret[j], ret[i]
+	}
+	return ret
+}

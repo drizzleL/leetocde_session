@@ -30,3 +30,26 @@ func Test_twoSum(t *testing.T) {
 		})
 	}
 }
+
+func Test_findContinuousSequence(t *testing.T) {
+	type args struct {
+		target int
+	}
+	tests := []struct {
+		name string
+		args args
+		want [][]int
+	}{
+		{
+			args: args{
+				target: 9,
+			},
+			want: [][]int{{2, 3, 4}, {4, 5}},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, findContinuousSequence(tt.args.target))
+		})
+	}
+}
