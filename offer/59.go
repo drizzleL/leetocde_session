@@ -35,3 +35,29 @@ func (this *MaxQueue) Pop_front() int {
 	}
 	return val
 }
+
+func maxSlidingWindow(nums []int, k int) []int {
+	if len(nums) < k {
+		return nil
+	}
+	var stack []int
+	for i := 0; i < k; i++ {
+		for len(stack) != 0 && stack[len(stack)-1] < nums[i] {
+			stack = stack[:len(stack)-1]
+		}
+		stack = append(stack, nums[i])
+	}
+	res := []int{stack[0]}
+	for j := k; j < len(nums); j++ {
+		// pop first
+		if nums[j-k] == stack[0] {
+			stack = stack[1:]
+		}
+		for len(stack) != 0 && stack[len(stack)-1] < nums[j] {
+			stack = stack[:len(stack)-1]
+		}
+		stack = append(stack, nums[j])
+		res = append(res, stack[0])
+	}
+	return res
+}

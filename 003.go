@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 func lengthOfLongestSubstring(s string) int {
 	dict := make([]int, 256)
 	ret, currStart := 0, 0
@@ -18,24 +16,4 @@ func lengthOfLongestSubstring(s string) int {
 		dict[v] = i + 1
 	}
 	return ret
-}
-
-func main() {
-	tests := []string{
-		"",
-		"a",
-		"abb",
-		"abba",
-		"abc",
-		"defg",
-		"hijkl",
-		"mnop",
-		"qrstuv",
-		"wxyz",
-		"pwwkew",
-	}
-
-	for _, test := range tests {
-		fmt.Println(test, lengthOfLongestSubstring(test))
-	}
 }
