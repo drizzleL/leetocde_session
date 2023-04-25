@@ -55,10 +55,10 @@ func (this *LFUCache) Put(key int, value int) {
 		return
 	}
 	// newly inserted
-	if this.freqTail.prev.times == 1 { // 可以添加在这个后面
+	// if this.freqTail.prev.times == 1 { // 可以添加在这个后面
 
-	} else { // 新创建一个再添加在这里
-	}
+	// } else { // 新创建一个再添加在这里
+	// }
 }
 
 // 新的lastItem为head
@@ -87,10 +87,10 @@ func (this *LFUCache) insertFreq(item *entry, lastFreqItem *freqEntry) {
 
 func (this *LFUCache) remove(item *entry) {
 	// 如果他是group head
-	if item.prevFreq.next == item {
+	// if item.prevFreq.next == item {
 
-	} else { // tail, just remove
-		item.prev.next = item.next
-		item.next.prev = item.prev
-	}
+	// } else { // tail, just remove
+	// 	item.prev.next = item.next
+	// 	item.next.prev = item.prev
+	// }
 }
