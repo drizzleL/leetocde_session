@@ -3,8 +3,7 @@ package main
 type LFUCache struct {
 	dict     map[int]*entry
 	cap      int
-	freqHead *entry
-	freqTail *entry
+	freqHead *freqEntry
 }
 
 type freqEntry struct {
@@ -24,15 +23,26 @@ type entry struct {
 }
 
 func Constructor(capacity int) LFUCache {
-	freqHead := &entry{}
-	freqTail := &entry{}
-	freqHead.next = freqTail
-	freqTail.prev = freqHead
+	head := newFreqEntry()
+	tail := newFreqEntry()
+	head.next = tail
+	tail.prev = head
 	return LFUCache{
 		cap:      capacity,
-		freqHead: freqHead,
-		freqTail: freqTail,
+		dict:     make(map[int]*entry),
+		freqHead: head,
 	}
+}
+
+func newFreqEntry() *freqEntry {
+	freq := new(freqEntry)
+	head := new(entry)
+	tail := new(entry)
+	head.next = tail
+	tail.prev = head
+	freq.head = head
+	freq.tail = tail
+	return freq
 }
 
 // just find,
@@ -42,55 +52,78 @@ func (this *LFUCache) Get(key int) int {
 	if !ok {
 		return -1
 	}
-	// add freq
+	lastFreq := this.remove(item)
+	item.freq++
+	if lastFreq {
+		this.insertFreq(item, item.freqItem.prev)
+	} else {
+		this.insertFreq(item, item.freqItem)
+	}
 	return item.val
 }
 
-// not exist + full, expire old
-// push
 func (this *LFUCache) Put(key int, value int) {
-	oldItem, ok := this.dict[key]
+	item, ok := this.dict[key]
 	if ok {
-		oldItem.val = value
+		item.val = value
+		lastFreq := this.remove(item)
+		item.freq++
+		if lastFreq {
+			this.insertFreq(item, item.freqItem.prev)
+		} else {
+			this.insertFreq(item, item.freqItem)
+		}
 		return
 	}
-	// newly inserted
-	// if this.freqTail.prev.times == 1 { // 可以添加在这个后面
-
-	// } else { // 新创建一个再添加在这里
-	// }
-}
-
-// 新的lastItem为head
-// 旧的lastItem为当前所属的item
-func (this *LFUCache) insertFreq(item *entry, lastFreqItem *freqEntry) {
-	if lastFreqItem.next.freq == item.freq { // 插入到队尾
-		group := lastFreqItem.next
-		item.freqItem = group
-		item.prev = group.tail.prev
-		item.next = group.tail
-		group.tail.prev.next = item
-		group.tail.prev = item
-	} else { // 不存在分组
-		newFreq := &freqEntry{
-			freq: item.freq,
-			prev: lastFreqItem,
-			next: lastFreqItem.next,
-			head: item,
-			tail: item,
-		}
-		item.freqItem = newFreq
-		item.next = newFreq.head
-		item.prev = newFreq.tail
+	if this.cap == len(this.dict) { /// forget first
+		this.forget()
 	}
+	item = &entry{
+		key:  key,
+		val:  value,
+		freq: 1,
+	}
+	this.insertFreq(item, this.freqHead)
+
 }
 
-func (this *LFUCache) remove(item *entry) {
-	// 如果他是group head
-	// if item.prevFreq.next == item {
+func (this *LFUCache) insertFreq(item *entry, lastFreqItem *freqEntry) {
+	var freq *freqEntry
+	if lastFreqItem.next.freq == item.freq { // 插入到队尾
+		freq = lastFreqItem.next
+	} else { // 不存在分组
+		freq = newFreqEntry()
 
-	// } else { // tail, just remove
-	// 	item.prev.next = item.next
-	// 	item.next.prev = item.prev
-	// }
+		freq.freq = item.freq
+		freq.prev = lastFreqItem
+		freq.next = lastFreqItem.next
+		freq.prev.next = freq
+		freq.next.prev = freq
+	}
+	item.freqItem = freq
+	item.prev = freq.tail.prev
+	item.next = freq.tail
+	freq.tail.prev.next = item
+	freq.tail.prev = item
+	this.dict[item.key] = item
+}
+
+func (this *LFUCache) remove(item *entry) bool {
+	delete(this.dict, item.key)
+	// remove from item list
+	item.prev.next = item.next
+	item.next.prev = item.prev
+
+	freq := item.freqItem
+	if freq.head.next == freq.tail { // freqitem can be deleted
+		freq.prev.next = freq.next
+		freq.next.prev = freq.prev
+		return true
+	}
+	return false
+}
+
+func (this *LFUCache) forget() {
+	item := this.freqHead.next.head.next
+	this.remove(item)
 }

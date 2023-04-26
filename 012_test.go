@@ -6,9 +6,9 @@ import (
 	"gotest.tools/assert"
 )
 
-func Test_longestPalindrome(t *testing.T) {
+func Test_intToRoman(t *testing.T) {
 	type args struct {
-		s string
+		num int
 	}
 	tests := []struct {
 		name string
@@ -17,14 +17,20 @@ func Test_longestPalindrome(t *testing.T) {
 	}{
 		{
 			args: args{
-				s: "cbbd",
+				num: 58,
 			},
-			want: "bb",
+			want: "LVIII",
+		},
+		{
+			args: args{
+				num: 1994,
+			},
+			want: "MCMXCIV",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, longestPalindrome(tt.args.s))
+			assert.Equal(t, tt.want, intToRoman(tt.args.num))
 		})
 	}
 }
